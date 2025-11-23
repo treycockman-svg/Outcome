@@ -1,10 +1,10 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import { Providers } from './providers';
+import type { Metadata } from "next";
+import "./globals.css";
+import { AppThemeProvider } from "./providers";
 
 export const metadata: Metadata = {
-  title: 'Outcome',
-  description: 'AI-powered life OS & performance dashboard',
+  title: "Outcome",
+  description: "Is your AI actually moving your life forward?",
 };
 
 export default function RootLayout({
@@ -14,9 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-slate-950 text-slate-50 antialiased">
-        <Providers>{children}</Providers>
+      <body>
+        <AppThemeProvider>{children}</AppThemeProvider>
       </body>
     </html>
   );
 }
+
