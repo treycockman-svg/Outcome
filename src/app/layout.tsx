@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import "./globals.css";
 import { AppThemeProvider } from "./providers";
 
@@ -7,11 +8,7 @@ export const metadata: Metadata = {
   description: "Is your AI actually moving your life forward?",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
@@ -20,4 +17,3 @@ export default function RootLayout({
     </html>
   );
 }
-

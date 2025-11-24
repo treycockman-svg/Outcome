@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import ThemeToggle from '@/components/ThemeToggle';
-import Panel3D from '@/components/Panel3D';
-import StatsCard from '@/components/StatsCard';
-import TrendChart from '@/components/TrendChart';
-import DreamTrackCard from '@/components/DreamTrackCard';
-import PipelineCard from '@/components/PipelineCard';
-import BlockMap from '@/components/BlockMap';
+import { useMemo, useState } from 'react';
+
+// ✅ IMPORTANT: match your actual tree
+import ThemeToggle from '@/app/marketing/_components/ThemeToggle';
+import Panel3D from '@/app/marketing/_components/Panel3D';
+import StatsCard from '@/app/marketing/_components/StatsCard';
+import TrendChart from '@/app/marketing/_components/TrendChart';
+import DreamTrackCard from '@/app/marketing/_components/DreamTrackCard';
+import PipelineCard from '@/app/marketing/_components/PipelineCard';
+import BlockMap from '@/app/marketing/_components/BlockMap';
 
 type Step =
   | 'hero'
@@ -18,31 +20,26 @@ type Step =
   | 'dashboard';
 
 const dreamQuestions: string[] = [
-  // DREAM LIFE – Lifestyle & Environment
   'Where do you imagine living in your ideal future?',
   'What does your home and daily environment look and feel like?',
   'Who shares this space or lifestyle with you?',
   'How does your ideal morning begin?',
   'What experiences fill your weekends and free time?',
-  // Career & Wealth
   'What path or profession do you see yourself thriving in?',
   'How does your ideal work make you feel every day?',
   'What level of freedom or stability do you want financially?',
   'Who do you serve, help, or inspire through your work?',
   'What kind of impact or legacy do you want to create in your field?',
-  // Health & Body
   'How does your body feel when you wake up each day?',
   'What daily habits keep you energized and strong?',
   'How do you move, train, or stay active?',
   'What foods or routines support your best self?',
   'How confident and comfortable do you feel in your body?',
-  // Relationships & Social
   'Who are the most important people in your dream life?',
   'What does your ideal romantic or family relationship look like?',
   'What kind of friendships or community surround you?',
   'How do you celebrate success and connection with others?',
   'What does your social life teach or bring out in you?',
-  // Mindset & Identity
   'What 3 words describe the person you are becoming?',
   'What emotions or attitudes guide your daily life?',
   'How do you handle pressure or challenges when they appear?',
@@ -51,31 +48,26 @@ const dreamQuestions: string[] = [
 ];
 
 const realityQuestions: string[] = [
-  // REALITY – Lifestyle & Environment
   'Where do you currently live, and how does it feel day to day?',
   'How organised or balanced is your current lifestyle (1–10)?',
   'How much genuine free time do you have each week?',
   'What’s your morning routine like right now?',
   'How often do you feel calm and present in your environment?',
-  // Career & Wealth
   'What do you currently do for income?',
   'How fulfilled are you by your work or studies (1–10)?',
   'How consistent or secure is your financial situation?',
   'What skills or opportunities are you building right now?',
   'How clear are you about your long-term career direction (1–10)?',
-  // Health & Body
   'How do you feel physically most days (energy level 1–10)?',
   'How often do you exercise or move your body each week?',
   'How healthy is your current diet or sleep routine?',
   'Do you experience any pain, fatigue, or health issues?',
   'How confident are you in your current appearance (1–10)?',
-  // Relationships & Social
   'How supportive is your current circle of friends or mentors?',
   'What’s your current romantic or family situation like?',
   'How socially fulfilled do you feel (1–10)?',
   'How often do you connect or collaborate with new people?',
   'How respected or valued do you feel in your social circles?',
-  // Mindset & Habits
   'How disciplined or focused are you right now (1–10)?',
   'What’s your biggest recurring mental barrier or distraction?',
   'How often do you reflect, plan, or journal about your growth?',
@@ -85,16 +77,17 @@ const realityQuestions: string[] = [
 
 export default function OutcomePage() {
   const [step, setStep] = useState<Step>('hero');
-  const [email, setEmail] = useState('');
+
   const [dreamAnswers, setDreamAnswers] = useState<string[]>(
     Array(dreamQuestions.length).fill('')
   );
   const [realityAnswers, setRealityAnswers] = useState<string[]>(
     Array(realityQuestions.length).fill('')
   );
+
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [previewScore, setPreviewScore] = useState<number | null>(null);
-  const [previewSummary, setPreviewSummary] = useState<string>('');
+  const [previewSummary, setPreviewSummary] = useState('');
   const [pillarsPreview, setPillarsPreview] = useState<
     { label: string; score: number }[]
   >([]);
@@ -114,6 +107,38 @@ export default function OutcomePage() {
     (totalAnswered / totalQuestions) * 100
   );
 
+  // ✅ Required props for PipelineCard
+  const pipelinePreview = useMemo(() => {
+    const planned = Math.max(0, totalQuestions - totalAnswered);
+    const inMotion = Math.min(totalAnswered, 8);
+    const locked = completionPercent >= 70 ? 3 : completionPercent >= 40 ? 1 : 0;
+
+    return {
+      title: 'Execution pipeline',
+      planned,
+      inMotion,
+      locked
+    };
+  }, [totalQuestions, totalAnswered, completionPercent]);
+
+  // ✅ Required props for BlockMap
+  const blocksPreview = useMemo(() => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return days.map((d, i) => {
+      const progress = Math.min(
+        100,
+        Math.max(0, completionPercent - i * 8)
+      );
+      return {
+        id: d.toLowerCase(),
+        label: d,
+        done: progress > 55,
+        value: progress,
+        progress
+      };
+    });
+  }, [completionPercent]);
+
   function handleDreamChange(index: number, value: string) {
     setDreamAnswers((prev) => {
       const next = [...prev];
@@ -131,8 +156,6 @@ export default function OutcomePage() {
   }
 
   async function handleAnalyzeClick() {
-    // For now we do a deterministic mock based on how complete they are.
-    // Later this is where we call /api/analyze with OpenAI + Supabase.
     setIsAnalyzing(true);
     try {
       const base = 40;
@@ -141,7 +164,6 @@ export default function OutcomePage() {
       );
       const overall = Math.min(95, base + boostFromCompletion);
 
-      // Fake pillar breakdown (mindset / health / wealth / network / execution)
       const pillars = [
         { label: 'Mindset', score: Math.min(99, overall + 3) },
         { label: 'Health', score: Math.max(40, overall - 8) },
@@ -161,7 +183,9 @@ export default function OutcomePage() {
     }
   }
 
-  // ---------- RENDER HELPERS ----------
+  // -------------------------------------------------------
+  // ✅ FIXED HERO SECTION — THIS IS THE PART YOU ASKED FOR
+  // -------------------------------------------------------
   function renderHero() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-black text-slate-50">
@@ -194,6 +218,7 @@ export default function OutcomePage() {
               </p>
             </div>
 
+            {/* Buttons */}
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setStep('dream')}
@@ -209,6 +234,7 @@ export default function OutcomePage() {
               </button>
             </div>
 
+            {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
               <StatsCard
                 label="Probability engine"
@@ -228,22 +254,25 @@ export default function OutcomePage() {
             </div>
           </section>
 
+          {/* RIGHT SIDE CARDS */}
           <section className="space-y-4">
-            <Panel3D
-              title="Outcome dashboard"
-              subtitle="3D panels, smooth motion, clean Apple-level UI."
+            <Panel3D />
+
+            {/* DreamTrackCard: only needs progress */}
+            <DreamTrackCard progress={completionPercent} />
+
+            {/* PipelineCard: needs title, planned, inMotion, locked */}
+            <PipelineCard
+              title={pipelinePreview.title}
+              planned={pipelinePreview.planned}
+              inMotion={pipelinePreview.inMotion}
+              locked={pipelinePreview.locked}
             />
-            <DreamTrackCard
-              progress={completionPercent}
-              label="Questionnaire completion"
-            />
-            <PipelineCard />
           </section>
         </main>
       </div>
     );
   }
-
   function renderQuestionnaire(
     mode: 'dream' | 'reality',
     questions: string[],
@@ -261,6 +290,8 @@ export default function OutcomePage() {
       mode === 'dream'
         ? 'Answer these prompts so Outcome can see the exact life you want to simulate.'
         : 'Be brutally honest – the closer we get to the truth, the more accurate the simulation.';
+
+    const isRealityStep = mode === 'reality';
 
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-black text-slate-50">
@@ -327,10 +358,14 @@ export default function OutcomePage() {
                 </button>
               )}
               <button
-                className="rounded-full bg-sky-500 px-5 py-2 text-sm font-medium text-white shadow-[0_0_25px_rgba(56,189,248,0.6)] hover:bg-sky-400 transition"
+                disabled={isRealityStep && isAnalyzing}
+                className={`rounded-full px-5 py-2 text-sm font-medium text-white shadow-[0_0_25px_rgba(56,189,248,0.6)] transition
+                  ${isRealityStep && isAnalyzing
+                    ? 'bg-slate-700 cursor-not-allowed'
+                    : 'bg-sky-500 hover:bg-sky-400'}`}
                 onClick={onNext}
               >
-                Next step →
+                {isRealityStep && isAnalyzing ? 'Analyzing…' : 'Next step →'}
               </button>
             </div>
           </div>
@@ -339,6 +374,9 @@ export default function OutcomePage() {
     );
   }
 
+  // ------------------------------
+  // PREVIEW SCREEN
+  // ------------------------------
   function renderPreview() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-black text-slate-50">
@@ -382,10 +420,7 @@ export default function OutcomePage() {
 
             <section className="space-y-4">
               <TrendChart />
-              <DreamTrackCard
-                progress={completionPercent}
-                label="Questionnaire completion"
-              />
+              <DreamTrackCard progress={completionPercent} />
             </section>
           </div>
 
@@ -423,6 +458,9 @@ export default function OutcomePage() {
     );
   }
 
+  // ------------------------------
+  // PAYWALL SCREEN
+  // ------------------------------
   function renderPaywall() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-black text-slate-50">
@@ -449,6 +487,7 @@ export default function OutcomePage() {
           </div>
 
           <div className="grid gap-5 md:grid-cols-3">
+            {/* STARTER */}
             <div className="rounded-3xl border border-slate-800 bg-slate-950/70 p-5 flex flex-col justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
@@ -472,6 +511,7 @@ export default function OutcomePage() {
               </div>
             </div>
 
+            {/* CORE BUILD */}
             <div className="rounded-3xl border border-emerald-500/60 bg-gradient-to-b from-emerald-500/10 via-slate-950 to-slate-950 p-5 flex flex-col justify-between shadow-[0_0_40px_rgba(16,185,129,0.5)]">
               <div>
                 <p className="text-xs uppercase tracking-[0.25em] text-emerald-400">
@@ -497,6 +537,7 @@ export default function OutcomePage() {
               </div>
             </div>
 
+            {/* ELITE */}
             <div className="rounded-3xl border border-slate-800 bg-slate-950/70 p-5 flex flex-col justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
@@ -527,6 +568,9 @@ export default function OutcomePage() {
     );
   }
 
+  // ------------------------------
+  // DASHBOARD PREVIEW SCREEN
+  // ------------------------------
   function renderDashboardPreview() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-black text-slate-50">
@@ -569,8 +613,13 @@ export default function OutcomePage() {
             </section>
 
             <section className="space-y-4">
-              <DreamTrackCard progress={completionPercent} label="Build sync" />
-              <BlockMap />
+              <DreamTrackCard progress={completionPercent} />
+
+              {/* FIXED: BlockMap requires title + blocks[] */}
+              <BlockMap
+                title="Weekly execution map"
+                blocks={blocksPreview}
+              />
             </section>
           </div>
 
@@ -618,7 +667,9 @@ export default function OutcomePage() {
     );
   }
 
-  // ---------- MAIN RENDER ----------
+  // ------------------------------
+  // MAIN ROUTER
+  // ------------------------------
   if (step === 'dream') {
     return renderQuestionnaire(
       'dream',
@@ -640,18 +691,9 @@ export default function OutcomePage() {
     );
   }
 
-  if (step === 'preview') {
-    return renderPreview();
-  }
+  if (step === 'preview') return renderPreview();
+  if (step === 'paywall') return renderPaywall();
+  if (step === 'dashboard') return renderDashboardPreview();
 
-  if (step === 'paywall') {
-    return renderPaywall();
-  }
-
-  if (step === 'dashboard') {
-    return renderDashboardPreview();
-  }
-
-  // default: hero
   return renderHero();
 }
