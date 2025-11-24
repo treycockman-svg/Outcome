@@ -111,30 +111,50 @@ export default function OutcomePage() {
   const pipelinePreview = useMemo(() => {
     const planned = Math.max(0, totalQuestions - totalAnswered);
     const inMotion = Math.min(totalAnswered, 8);
-    const locked = completionPercent >= 70 ? 3 : completionPercent >= 40 ? 1 : 0;
+    const lockedIn =
+      completionPercent >= 70 ? 3 : completionPercent >= 40 ? 1 : 0;
 
     return {
       title: 'Execution pipeline',
       planned,
       inMotion,
-      locked
+      lockedIn
     };
   }, [totalQuestions, totalAnswered, completionPercent]);
+
+  const dreamTrackCard = useMemo(
+    () => ({
+      title: 'Dream vs reality',
+      value: `${totalAnswered}/${totalQuestions} prompts answered`,
+      helper: 'Completing prompts raises your core probability.'
+    }),
+    [totalAnswered, totalQuestions]
+  );
 
   // ✅ Required props for BlockMap
   const blocksPreview = useMemo(() => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days.map((d, i) => {
+    const formatTime = (hour: number) => {
+      const normalizedHour = ((hour + 11) % 12) + 1;
+      const suffix = hour >= 12 ? 'pm' : 'am';
+      return `${normalizedHour}:00${suffix}`;
+    };
+
+    return days.map((day, index) => {
       const progress = Math.min(
         100,
-        Math.max(0, completionPercent - i * 8)
+        Math.max(0, completionPercent - index * 8)
       );
+      const status =
+        progress >= 70 ? 'done' : progress >= 40 ? 'focus' : 'upcoming';
+
+      const startHour = 6 + index;
+      const endHour = startHour + 2;
+
       return {
-        id: d.toLowerCase(),
-        label: d,
-        done: progress > 55,
-        value: progress,
-        progress
+        label: day,
+        time: `${formatTime(startHour)} - ${formatTime(endHour)}`,
+        status
       };
     });
   }, [completionPercent]);
@@ -258,15 +278,19 @@ export default function OutcomePage() {
           <section className="space-y-4">
             <Panel3D />
 
-            {/* DreamTrackCard: only needs progress */}
-            <DreamTrackCard progress={completionPercent} />
+            <DreamTrackCard
+              title={dreamTrackCard.title}
+              value={dreamTrackCard.value}
+              progress={completionPercent}
+              helper={dreamTrackCard.helper}
+            />
 
-            {/* PipelineCard: needs title, planned, inMotion, locked */}
+            {/* PipelineCard: needs title, planned, inMotion, lockedIn */}
             <PipelineCard
               title={pipelinePreview.title}
               planned={pipelinePreview.planned}
               inMotion={pipelinePreview.inMotion}
-              locked={pipelinePreview.locked}
+              lockedIn={pipelinePreview.lockedIn}
             />
           </section>
         </main>
@@ -420,7 +444,12 @@ export default function OutcomePage() {
 
             <section className="space-y-4">
               <TrendChart />
-              <DreamTrackCard progress={completionPercent} />
+              <DreamTrackCard
+                title={dreamTrackCard.title}
+                value={dreamTrackCard.value}
+                progress={completionPercent}
+                helper={dreamTrackCard.helper}
+              />
             </section>
           </div>
 
@@ -613,7 +642,12 @@ export default function OutcomePage() {
             </section>
 
             <section className="space-y-4">
-              <DreamTrackCard progress={completionPercent} />
+              <DreamTrackCard
+                title={dreamTrackCard.title}
+                value={dreamTrackCard.value}
+                progress={completionPercent}
+                helper={dreamTrackCard.helper}
+              />
 
               {/* FIXED: BlockMap requires title + blocks[] */}
               <BlockMap

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -121,17 +121,19 @@ const REALITY_GROUPS: QAGroup[] = [
 export default function ResultsPreviewPage() {
   const router = useRouter();
 
-  const [dream, setDream] = useState<Record<string, string>>({});
-  const [reality, setReality] = useState<Record<string, string>>({});
-
-  useEffect(() => {
+  const readStored = (key: string) => {
+    if (typeof window === "undefined") return {};
     try {
-      const d = localStorage.getItem(DREAM_KEY);
-      const r = localStorage.getItem(REALITY_KEY);
-      if (d) setDream(JSON.parse(d));
-      if (r) setReality(JSON.parse(r));
-    } catch {}
-  }, []);
+      const raw = window.localStorage.getItem(key);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const [dream] = useState<Record<string, string>>(() => readStored(DREAM_KEY));
+  const [reality] = useState<Record<string, string>>(() => readStored(REALITY_KEY));
 
   const stats = useMemo(() => {
     const dreamQs = DREAM_GROUPS.flatMap((g) => g.questions);

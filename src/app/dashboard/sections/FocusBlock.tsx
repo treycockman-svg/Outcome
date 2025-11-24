@@ -25,18 +25,14 @@ export default function FocusBlock() {
   const [secondsLeft, setSecondsLeft] = useState(durationMin * 60);
   const [running, setRunning] = useState(false);
 
-  // keep timer in sync when preset changes (only if not running)
-  useEffect(() => {
-    if (!running) setSecondsLeft(durationMin * 60);
-  }, [durationMin, running]);
-
-  // tick
+  // tick + auto-stop
   useEffect(() => {
     if (!running) return;
     const id = setInterval(() => {
       setSecondsLeft((s) => {
         if (s <= 1) {
           clearInterval(id);
+          setRunning(false);
           return 0;
         }
         return s - 1;
@@ -44,11 +40,6 @@ export default function FocusBlock() {
     }, 1000);
     return () => clearInterval(id);
   }, [running]);
-
-  // auto-stop at 0
-  useEffect(() => {
-    if (secondsLeft === 0) setRunning(false);
-  }, [secondsLeft]);
 
   const totalSeconds = durationMin * 60;
   const progress = useMemo(() => {
@@ -128,7 +119,10 @@ export default function FocusBlock() {
             {PRESETS.map((p) => (
               <button
                 key={p.minutes}
-                onClick={() => setDurationMin(p.minutes)}
+                onClick={() => {
+                  setDurationMin(p.minutes);
+                  setSecondsLeft(p.minutes * 60);
+                }}
                 disabled={running}
                 className={`px-3 py-1.5 rounded-full text-xs border transition ${
                   durationMin === p.minutes
