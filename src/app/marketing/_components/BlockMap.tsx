@@ -3,7 +3,7 @@
 import React from "react";
 import Panel3D from "./Panel3D";
 
-type Block = {
+export type Block = {
   label: string;
   time: string;
   status?: "done" | "upcoming" | "focus";

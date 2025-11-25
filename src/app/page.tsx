@@ -9,7 +9,9 @@ import StatsCard from '@/app/marketing/_components/StatsCard';
 import TrendChart from '@/app/marketing/_components/TrendChart';
 import DreamTrackCard from '@/app/marketing/_components/DreamTrackCard';
 import PipelineCard from '@/app/marketing/_components/PipelineCard';
-import BlockMap from '@/app/marketing/_components/BlockMap';
+import BlockMap, {
+  type Block as BlockMapBlock
+} from '@/app/marketing/_components/BlockMap';
 
 type Step =
   | 'hero'
@@ -132,7 +134,7 @@ export default function OutcomePage() {
   );
 
   // ✅ Required props for BlockMap
-  const blocksPreview = useMemo(() => {
+  const blocksPreview = useMemo<BlockMapBlock[]>(() => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const formatTime = (hour: number) => {
       const normalizedHour = ((hour + 11) % 12) + 1;
@@ -155,7 +157,7 @@ export default function OutcomePage() {
         label: day,
         time: `${formatTime(startHour)} - ${formatTime(endHour)}`,
         status
-      };
+      } satisfies BlockMapBlock;
     });
   }, [completionPercent]);
 
