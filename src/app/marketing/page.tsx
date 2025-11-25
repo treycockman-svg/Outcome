@@ -122,7 +122,7 @@ export default function MarketingPage() {
               "Weekly trend overview",
             ]}
             ctaLabel="Start Free"
-            onCtaClick={() => (window.location.href = "/onboarding")}
+            ctaHref="/onboarding"
           />
 
           <PricingCard
@@ -141,7 +141,7 @@ export default function MarketingPage() {
               "Priority support",
             ]}
             ctaLabel="Go Pro"
-            onCtaClick={() => (window.location.href = "/onboarding/paywall")}
+            ctaHref="/onboarding/paywall"
           />
 
           <PricingCard
@@ -157,7 +157,7 @@ export default function MarketingPage() {
               "Early access to new features",
             ]}
             ctaLabel="Join Elite"
-            onCtaClick={() => (window.location.href = "/onboarding/paywall")}
+            ctaHref="/onboarding/paywall"
           />
         </div>
       </section>

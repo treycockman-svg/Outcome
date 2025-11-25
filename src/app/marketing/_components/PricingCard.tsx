@@ -10,6 +10,7 @@ interface PricingCardProps {
   description?: string;
   features: string[];
   ctaLabel?: string;
+  ctaHref?: string;
   onCtaClick?: () => void;
   popular?: boolean;
   badge?: string; // e.g. "Most Popular"
@@ -37,12 +38,20 @@ export default function PricingCard({
   description,
   features,
   ctaLabel = "Get Started",
+  ctaHref,
   onCtaClick,
   popular = false,
   badge,
   icon,
   index = 0,
 }: PricingCardProps) {
+  const ctaClasses = `block w-full rounded-md px-4 py-2 text-sm font-medium text-center transition border
+    ${
+      popular
+        ? "bg-blue-600 text-white border-blue-500/50 hover:bg-blue-700 dark:bg-orange-500 dark:border-orange-400/60 dark:hover:bg-orange-600"
+        : "bg-black text-white border-black/20 hover:bg-black/90 dark:bg-white/10 dark:text-white dark:border-white/15 dark:hover:bg-white/15"
+    }`;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -111,17 +120,15 @@ export default function PricingCard({
 
       {/* CTA */}
       <div className="relative z-10 mt-6">
-        <button
-          onClick={onCtaClick}
-          className={`w-full rounded-md px-4 py-2 text-sm font-medium transition border
-            ${
-              popular
-                ? "bg-blue-600 text-white border-blue-500/50 hover:bg-blue-700 dark:bg-orange-500 dark:border-orange-400/60 dark:hover:bg-orange-600"
-                : "bg-black text-white border-black/20 hover:bg-black/90 dark:bg-white/10 dark:text-white dark:border-white/15 dark:hover:bg-white/15"
-            }`}
-        >
-          {ctaLabel}
-        </button>
+        {ctaHref ? (
+          <a href={ctaHref} className={ctaClasses}>
+            {ctaLabel}
+          </a>
+        ) : (
+          <button onClick={onCtaClick} className={ctaClasses}>
+            {ctaLabel}
+          </button>
+        )}
 
         <p className="mt-2 text-[11px] text-black/50 dark:text-white/45 text-center">
           Cancel anytime · Upgrade/downgrade whenever
